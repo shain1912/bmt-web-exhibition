@@ -2,6 +2,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "e2e": "playwright test",
     "preview": "vite preview"
   },
   "dependencies": {
@@ -13,6 +14,7 @@
     "vite": "^7.0.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.61.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3"
   }

@@ -6,3 +6,5 @@ dist
 
 # Local Netlify folder
 .netlify
+test-results
+playwright-report

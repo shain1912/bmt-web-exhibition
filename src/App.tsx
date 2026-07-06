@@ -29,66 +29,6 @@ type ProjectForm = {
   sort_order: string;
 };
 
-const fallbackProjects: ExhibitionProject[] = [
-  {
-    id: 'demo-1',
-    slug: 'cad-lab-archive',
-    title: 'CAD Lab Archive',
-    team_name: '정밀설계팀',
-    student_names: ['WEB 동아리'],
-    description: '기계 설계 실습 기록을 웹 포트폴리오 형태로 정리한 아카이브입니다.',
-    iframe_url: 'https://example.com',
-    source_url: 'https://example.com',
-    repo_url: 'https://github.com',
-    thumbnail_url: null,
-    stack: ['React', 'TypeScript', 'Supabase'],
-    category: '포트폴리오',
-    exhibition_year: 2026,
-    grade: '2학년',
-    featured: true,
-    active: true,
-    sort_order: 10,
-  },
-  {
-    id: 'demo-2',
-    slug: 'cnc-simulator-note',
-    title: 'CNC Simulator Note',
-    team_name: '가공연구팀',
-    student_names: ['WEB 동아리'],
-    description: 'CNC 가공 흐름과 G-code 학습 내용을 인터랙티브 노트로 보여주는 프로젝트입니다.',
-    iframe_url: 'https://example.com',
-    source_url: 'https://example.com',
-    repo_url: 'https://github.com',
-    thumbnail_url: null,
-    stack: ['Vite', 'Canvas', 'CSS'],
-    category: '학습도구',
-    exhibition_year: 2026,
-    grade: '1학년',
-    featured: false,
-    active: true,
-    sort_order: 20,
-  },
-  {
-    id: 'demo-3',
-    slug: 'school-club-studio',
-    title: 'School Club Studio',
-    team_name: '전시기획팀',
-    student_names: ['WEB 동아리'],
-    description: '동아리 활동과 결과물을 모던한 전시관 형태로 큐레이션한 웹사이트입니다.',
-    iframe_url: 'https://example.com',
-    source_url: 'https://example.com',
-    repo_url: 'https://github.com',
-    thumbnail_url: null,
-    stack: ['HTML', 'CSS', 'JavaScript'],
-    category: '전시',
-    exhibition_year: 2026,
-    grade: '공동',
-    featured: true,
-    active: true,
-    sort_order: 30,
-  },
-];
-
 const emptyForm: ProjectForm = {
   id: '',
   slug: '',
@@ -162,19 +102,20 @@ function formToProject(form: ProjectForm): ExhibitionProjectInput {
 }
 
 function App() {
-  const [projects, setProjects] = useState<ExhibitionProject[]>(fallbackProjects);
-  const [selectedSlug, setSelectedSlug] = useState(fallbackProjects[0].slug);
+  const [projects, setProjects] = useState<ExhibitionProject[]>([]);
+  const [selectedSlug, setSelectedSlug] = useState('');
   const [activeCategory, setActiveCategory] = useState('전체');
   const [loadState, setLoadState] = useState<LoadState>('loading');
   const [password, setPassword] = useState('');
-  const [form, setForm] = useState<ProjectForm>(() => projectToForm(fallbackProjects[0]));
-  const [adminMessage, setAdminMessage] = useState<AdminMessage>({ type: 'idle', text: '작품을 선택하거나 새 작품을 등록하세요.' });
+  const [form, setForm] = useState<ProjectForm>(emptyForm);
+  const [adminMessage, setAdminMessage] = useState<AdminMessage>({ type: 'idle', text: '아무 작품도 선택하지 않았습니다. 새 작품을 등록하세요.' });
   const [saving, setSaving] = useState(false);
 
   async function loadProjects() {
     if (!hasSupabaseConfig || !supabase) {
       setLoadState('fallback');
-      return fallbackProjects;
+      setProjects([]);
+      return [];
     }
 
     const { data, error } = await supabase
@@ -184,15 +125,15 @@ function App() {
       .order('featured', { ascending: false })
       .order('sort_order', { ascending: true });
 
-    if (error || !data?.length) {
+    if (error) {
       setLoadState('fallback');
-      setProjects(fallbackProjects);
-      return fallbackProjects;
+      setProjects([]);
+      return [];
     }
 
-    setProjects(data);
+    setProjects(data ?? []);
     setLoadState('ready');
-    return data;
+    return data ?? [];
   }
 
   useEffect(() => {
@@ -201,8 +142,13 @@ function App() {
     async function initProjects() {
       const nextProjects = await loadProjects();
       if (ignore) return;
-      setSelectedSlug(nextProjects[0].slug);
-      setForm(projectToForm(nextProjects[0]));
+      if (nextProjects[0]) {
+        setSelectedSlug(nextProjects[0].slug);
+        setForm(projectToForm(nextProjects[0]));
+      } else {
+        setSelectedSlug('');
+        setForm(emptyForm);
+      }
     }
 
     initProjects();
@@ -223,7 +169,7 @@ function App() {
   }, [activeCategory, projects]);
 
   const selectedProject =
-    visibleProjects.find((project) => project.slug === selectedSlug) ?? visibleProjects[0] ?? projects[0];
+    visibleProjects.find((project) => project.slug === selectedSlug) ?? null;
 
   function selectProject(project: ExhibitionProject) {
     setSelectedSlug(project.slug);
@@ -235,7 +181,18 @@ function App() {
     const nextProject = category === '전체'
       ? projects[0]
       : projects.find((project) => project.category === category);
-    if (nextProject) selectProject(nextProject);
+    if (nextProject) {
+      selectProject(nextProject);
+    } else {
+      setSelectedSlug('');
+      setForm(emptyForm);
+    }
+  }
+
+  function startNewProject() {
+    setSelectedSlug('');
+    setForm(emptyForm);
+    setAdminMessage({ type: 'idle', text: '새 작품 작성 중입니다. 저장하면 전시에 추가됩니다.' });
   }
 
   function updateForm(field: keyof ProjectForm, value: string | boolean) {
@@ -267,7 +224,7 @@ function App() {
       await callAdmin(action, project);
       const nextProjects = await loadProjects();
       const nextProject = nextProjects.find((item) => item.slug === project.slug) ?? nextProjects[0];
-      selectProject(nextProject);
+      if (nextProject) selectProject(nextProject);
       setAdminMessage({ type: 'success', text: action === 'create' ? '작품을 등록했습니다.' : '작품을 수정했습니다.' });
     } catch (error) {
       setAdminMessage({ type: 'error', text: error instanceof Error ? error.message : '저장에 실패했습니다.' });
@@ -291,7 +248,11 @@ function App() {
       await callAdmin('delete', formToProject(form));
       const nextProjects = await loadProjects();
       const nextProject = nextProjects[0];
-      if (nextProject) selectProject(nextProject);
+      if (nextProject) {
+        selectProject(nextProject);
+      } else {
+        startNewProject();
+      }
       setAdminMessage({ type: 'success', text: '작품을 삭제했습니다.' });
     } catch (error) {
       setAdminMessage({ type: 'error', text: error instanceof Error ? error.message : '삭제에 실패했습니다.' });
@@ -339,9 +300,9 @@ function App() {
           </div>
 
           <div className="project-list">
-            {visibleProjects.map((project) => (
+            {visibleProjects.length > 0 ? visibleProjects.map((project) => (
               <button
-                className={project.slug === selectedProject.slug ? 'project-card active' : 'project-card'}
+                className={project.slug === selectedProject?.slug ? 'project-card active' : 'project-card'}
                 key={project.id}
                 type="button"
                 onClick={() => selectProject(project)}
@@ -352,19 +313,26 @@ function App() {
                 <strong>{project.title}</strong>
                 <span>{project.team_name}</span>
               </button>
-            ))}
+            )) : (
+              <div className="empty-list">
+                <strong>전시된 작품이 없습니다.</strong>
+                <span>아래 작품 관리에서 첫 작품을 등록하세요.</span>
+              </div>
+            )}
           </div>
 
           <p className="data-state">
             {loadState === 'ready'
-              ? 'Supabase에서 전시 데이터를 불러왔습니다.'
+              ? projects.length > 0 ? 'Supabase에서 전시 데이터를 불러왔습니다.' : 'Supabase에 등록된 공개 작품이 없습니다.'
               : loadState === 'fallback'
-                ? 'DB 연결 실패 시 예시 데이터로 표시됩니다.'
+                ? 'DB 연결을 확인할 수 없어 빈 상태로 표시됩니다.'
                 : '전시 데이터를 불러오는 중입니다.'}
           </p>
         </aside>
 
-        <section className="stage" aria-label={`${selectedProject.title} 미리보기`}>
+        <section className="stage" aria-label={selectedProject ? `${selectedProject.title} 미리보기` : '선택된 작품 없음'}>
+          {selectedProject ? (
+            <>
           <div className="stage-toolbar">
             <div>
               <p className="eyebrow">Now viewing</p>
@@ -420,6 +388,17 @@ function App() {
               </div>
             </dl>
           </div>
+            </>
+          ) : (
+            <div className="empty-stage">
+              <p className="eyebrow">No project selected</p>
+              <h2>아무 작품도 선택하지 않았습니다</h2>
+              <p>
+                아직 공개된 작품이 없거나 새 작품 작성 상태입니다. 아래 관리 영역에서 URL과 정보를 입력해 첫 작품을 등록하세요.
+              </p>
+              <button type="button" onClick={startNewProject}>새 작품 작성하기</button>
+            </div>
+          )}
         </section>
       </section>
 
@@ -445,7 +424,7 @@ function App() {
           </label>
 
           <div className="admin-tools span-2">
-            <button type="button" onClick={() => setForm(emptyForm)}>
+            <button type="button" onClick={startNewProject}>
               새 작품 작성
             </button>
             <button type="button" disabled={!form.id || saving} onClick={deleteProject}>
