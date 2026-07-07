@@ -381,8 +381,18 @@ function App() {
               title={`${selectedProject.title} 웹사이트 미리보기`}
               src={selectedProject.iframe_url}
               loading="lazy"
-              sandbox="allow-forms allow-popups allow-scripts"
+              sandbox="allow-forms allow-popups allow-same-origin allow-scripts"
             />
+          </div>
+
+          <div className="iframe-help">
+            <strong>미리보기가 비어 있나요?</strong>
+            <span>
+              대상 사이트가 iframe 표시를 막으면 전시관 안에서는 보이지 않습니다. 이 경우 새 창으로 열어 확인하세요.
+            </span>
+            <a href={selectedProject.source_url ?? selectedProject.iframe_url} target="_blank" rel="noreferrer">
+              새 창으로 열기
+            </a>
           </div>
 
           <div className="project-detail">
@@ -461,6 +471,7 @@ function App() {
           <label className="field span-2">
             <span>IFRAME URL</span>
             <input required type="url" value={form.iframe_url} onChange={(event) => updateForm('iframe_url', event.target.value)} />
+            <small>일부 사이트는 보안 설정 때문에 iframe 전시가 막힙니다. 이때는 새 창 링크로 열립니다.</small>
           </label>
           <label className="field">
             <span>새 창 URL</span>

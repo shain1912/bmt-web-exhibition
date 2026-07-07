@@ -34,7 +34,8 @@ body {
 button,
 a,
 input,
-textarea {
+textarea,
+small {
   font: inherit;
 }
 
@@ -336,6 +337,32 @@ h2 {
   border-right: 1px solid rgba(18, 61, 106, 0.14);
 }
 
+.iframe-help {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  align-items: center;
+  border: 1px solid rgba(183, 131, 47, 0.28);
+  border-top: 0;
+  background: rgba(255, 248, 232, 0.72);
+  padding: 12px 14px;
+  color: #5c4a2d;
+  line-height: 1.55;
+}
+
+.iframe-help strong {
+  color: #725018;
+}
+
+.iframe-help span {
+  flex: 1 1 360px;
+}
+
+.iframe-help a {
+  color: var(--blueprint);
+  font-weight: 700;
+}
+
 iframe {
   display: block;
   width: 100%;
@@ -417,6 +444,12 @@ dd {
   font-size: 0.78rem;
   font-weight: 600;
   letter-spacing: 0.04em;
+}
+
+.field small {
+  color: var(--muted);
+  font-size: 0.85rem;
+  line-height: 1.55;
 }
 
 input,
