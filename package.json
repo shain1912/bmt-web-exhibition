@@ -1,11 +1,19 @@
 {
+  "name": "bmt-web-exhibition",
+  "version": "1.0.0",
   "scripts": {
+    "add": "node cli/bmt-exhibit.mjs add",
+    "cli:smoke": "node cli/smoke.mjs",
+    "list": "node cli/bmt-exhibit.mjs list",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "e2e": "playwright test",
     "mcp:exhibition": "node mcp/exhibition-server.mjs",
     "mcp:smoke": "node mcp/exhibition-smoke.mjs",
     "preview": "vite preview"
+  },
+  "bin": {
+    "bmt-exhibit": "cli/bmt-exhibit.mjs"
   },
   "engines": {
     "node": ">=20.19.0"

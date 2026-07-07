@@ -16,6 +16,46 @@ npm run build
 npm run e2e
 ```
 
+## Easy CLI
+
+학생들은 MCP를 몰라도 CLI로 바로 작품을 올릴 수 있습니다.
+
+### 가장 쉬운 방법
+
+```bash
+git clone https://github.com/shain1912/bmt-web-exhibition.git
+cd bmt-web-exhibition
+npm install
+npm run add
+```
+
+질문에 답하면 자동으로 전시관에 등록됩니다.
+
+### 한 줄 등록
+
+```bash
+npm run add -- --title "내 작품" --url https://example.com --team "1팀"
+```
+
+### 전역 설치
+
+```bash
+npm install -g github:shain1912/bmt-web-exhibition
+bmt-exhibit add
+```
+
+### 목록 보기
+
+```bash
+npm run list
+```
+
+또는 전역 설치 후:
+
+```bash
+bmt-exhibit list
+```
+
 ## Exhibition MCP
 
 이 repo에는 작품 등록을 쉽게 하기 위한 로컬 MCP 서버가 포함되어 있습니다.

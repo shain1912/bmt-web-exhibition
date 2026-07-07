@@ -1,0 +1,9 @@
+.agents
+.env
+.env.local
+.netlify
+dist
+node_modules
+playwright-report
+skills-lock.json
+test-results
