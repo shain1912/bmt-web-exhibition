@@ -106,7 +106,6 @@ function App() {
   const [selectedSlug, setSelectedSlug] = useState('');
   const [activeCategory, setActiveCategory] = useState('전체');
   const [loadState, setLoadState] = useState<LoadState>('loading');
-  const [password, setPassword] = useState('');
   const [form, setForm] = useState<ProjectForm>(emptyForm);
   const [adminMessage, setAdminMessage] = useState<AdminMessage>({ type: 'idle', text: '아무 작품도 선택하지 않았습니다. 새 작품을 등록하세요.' });
   const [saving, setSaving] = useState(false);
@@ -205,7 +204,7 @@ function App() {
     const response = await fetch(supabaseFunctionUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password, action, project, id: project?.id }),
+      body: JSON.stringify({ action, project, id: project?.id }),
     });
 
     const body = await response.json();
@@ -407,22 +406,11 @@ function App() {
           <p className="eyebrow">Shared curator mode</p>
           <h2 id="admin-title">작품 관리</h2>
           <p>
-            비밀번호를 아는 동아리 구성원은 별도 로그인 없이 작품을 올리고, 고치고, 지울 수 있습니다.
+            동아리 구성원은 별도 로그인 없이 작품을 올리고, 고치고, 지울 수 있습니다.
           </p>
         </div>
 
         <form className="admin-form" onSubmit={saveProject}>
-          <label className="field span-2">
-            <span>관리 비밀번호</span>
-            <input
-              required
-              type="password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              placeholder="공유 비밀번호 입력"
-            />
-          </label>
-
           <div className="admin-tools span-2">
             <button type="button" onClick={startNewProject}>
               새 작품 작성

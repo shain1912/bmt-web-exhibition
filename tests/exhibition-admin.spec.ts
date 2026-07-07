@@ -9,7 +9,6 @@ test('registers, displays, and deletes an iframe project', async ({ page }) => {
   await expect(page.getByRole('heading', { name: '아무 작품도 선택하지 않았습니다' })).toBeVisible();
 
   await page.getByRole('button', { name: '새 작품 작성', exact: true }).click();
-  await page.getByLabel('관리 비밀번호').fill('bmtweb2026');
   await page.getByLabel('제목').fill(title);
   await page.getByLabel('슬러그').fill(slug);
   await page.getByLabel('팀명').fill('E2E 검증팀');

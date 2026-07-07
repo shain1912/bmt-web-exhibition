@@ -7,8 +7,6 @@ const corsHeaders = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
-const passwordHash = '70feaf3a09d1199f9ce9cf195f0b95d18fc55fb6093e5588d5e428b70e01be22';
-
 type ProjectPayload = {
   id?: string;
   slug?: string;
@@ -28,13 +26,6 @@ type ProjectPayload = {
   active?: boolean;
   sort_order?: number;
 };
-
-async function sha256(value: string) {
-  const buffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(buffer))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
-}
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -116,11 +107,7 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const { password, action, project, id } = await req.json();
-
-    if (await sha256(String(password ?? '')) !== passwordHash) {
-      return json({ error: '비밀번호가 맞지 않습니다.' }, 401);
-    }
+    const { action, project, id } = await req.json();
 
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
