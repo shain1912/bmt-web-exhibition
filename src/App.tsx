@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { FormEvent, useEffect, useMemo, useRef, useState } from 'react';
 import {
   ExhibitionProject,
   ExhibitionProjectInput,
@@ -109,6 +109,7 @@ function App() {
   const [form, setForm] = useState<ProjectForm>(emptyForm);
   const [adminMessage, setAdminMessage] = useState<AdminMessage>({ type: 'idle', text: '아무 작품도 선택하지 않았습니다. 새 작품을 등록하세요.' });
   const [saving, setSaving] = useState(false);
+  const formDirtyRef = useRef(false);
 
   async function loadProjects() {
     if (!hasSupabaseConfig || !supabase) {
@@ -141,6 +142,8 @@ function App() {
     async function initProjects() {
       const nextProjects = await loadProjects();
       if (ignore) return;
+      if (formDirtyRef.current) return;
+
       if (nextProjects[0]) {
         setSelectedSlug(nextProjects[0].slug);
         setForm(projectToForm(nextProjects[0]));
@@ -171,6 +174,7 @@ function App() {
     visibleProjects.find((project) => project.slug === selectedSlug) ?? null;
 
   function selectProject(project: ExhibitionProject) {
+    formDirtyRef.current = false;
     setSelectedSlug(project.slug);
     setForm(projectToForm(project));
   }
@@ -189,12 +193,14 @@ function App() {
   }
 
   function startNewProject() {
+    formDirtyRef.current = false;
     setSelectedSlug('');
     setForm(emptyForm);
     setAdminMessage({ type: 'idle', text: '새 작품 작성 중입니다. 저장하면 전시에 추가됩니다.' });
   }
 
   function updateForm(field: keyof ProjectForm, value: string | boolean) {
+    formDirtyRef.current = true;
     setForm((current) => ({ ...current, [field]: value }));
   }
 

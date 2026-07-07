@@ -1,0 +1,15 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "bmt-exhibition": {
+      "type": "local",
+      "command": ["node", "mcp/exhibition-server.mjs"],
+      "enabled": true,
+      "env": {
+        "BMT_SUPABASE_URL": "https://hpdnfhfpobmrwgxprrhb.supabase.co",
+        "BMT_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_lD6JDJoXUv4SFxI3s1AcPQ_jSZwjkqX",
+        "BMT_EXHIBITION_ORIGIN": "https://bmt-web-exhibition.netlify.app"
+      }
+    }
+  }
+}
