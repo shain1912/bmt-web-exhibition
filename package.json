@@ -5,6 +5,9 @@
     "e2e": "playwright test",
     "preview": "vite preview"
   },
+  "engines": {
+    "node": ">=20.19.0"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.52.1",
     "@vitejs/plugin-react": "^4.6.0",

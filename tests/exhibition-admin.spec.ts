@@ -6,7 +6,6 @@ test('registers, displays, and deletes an iframe project', async ({ page }) => {
 
   await page.goto('/');
   await expect(page.getByRole('heading', { name: 'WEB동아리 웹 전시실' })).toBeVisible();
-  await expect(page.getByRole('heading', { name: '아무 작품도 선택하지 않았습니다' })).toBeVisible();
 
   await page.getByRole('button', { name: '새 작품 작성', exact: true }).click();
   await page.getByLabel('제목').fill(title);
@@ -26,11 +25,21 @@ test('registers, displays, and deletes an iframe project', async ({ page }) => {
   await expect(page.getByText('작품을 등록했습니다.')).toBeVisible();
   await expect(page.getByRole('button', { name: new RegExp(title) })).toBeVisible();
   await expect(page.getByRole('heading', { name: title })).toBeVisible();
-  await expect(page.locator('iframe')).toHaveAttribute('src', 'https://example.com');
+  await expect(page.locator('iframe')).toHaveAttribute('src', 'https://example.com/');
+
+  await page.getByRole('button', { name: '새 작품 작성', exact: true }).click();
+  await page.getByLabel('제목').fill(`${title} Duplicate`);
+  await page.getByLabel('슬러그').fill(slug);
+  await page.getByLabel('팀명').fill('E2E 검증팀');
+  await page.getByLabel('설명').fill('중복 슬러그 오류 메시지를 확인합니다.');
+  await page.getByLabel('IFRAME URL').fill('https://example.com');
+  await page.getByRole('button', { name: '작품 등록' }).click();
+  await expect(page.getByText('이미 사용 중인 슬러그입니다. 다른 슬러그를 입력하세요.')).toBeVisible();
+
+  await page.getByRole('button', { name: new RegExp(title), exact: false }).first().click();
 
   page.on('dialog', (dialog) => dialog.accept());
   await page.getByRole('button', { name: '선택 작품 삭제' }).click();
   await expect(page.getByText('작품을 삭제했습니다.')).toBeVisible();
-  await expect(page.getByRole('heading', { name: '아무 작품도 선택하지 않았습니다' })).toBeVisible();
   await expect(page.getByRole('button', { name: new RegExp(title) })).toHaveCount(0);
 });

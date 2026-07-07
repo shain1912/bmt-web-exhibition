@@ -207,13 +207,19 @@ function App() {
       body: JSON.stringify({ action, project, id: project?.id }),
     });
 
-    const body = await response.json();
+    const contentType = response.headers.get('content-type') ?? '';
+    const body = contentType.includes('application/json')
+      ? await response.json()
+      : { error: await response.text() };
+
     if (!response.ok) throw new Error(body.error ?? '요청에 실패했습니다.');
     return body;
   }
 
   async function saveProject(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (saving) return;
+
     setSaving(true);
     setAdminMessage({ type: 'idle', text: '저장 중입니다.' });
 
@@ -223,6 +229,7 @@ function App() {
       await callAdmin(action, project);
       const nextProjects = await loadProjects();
       const nextProject = nextProjects.find((item) => item.slug === project.slug) ?? nextProjects[0];
+      setActiveCategory('전체');
       if (nextProject) selectProject(nextProject);
       setAdminMessage({ type: 'success', text: action === 'create' ? '작품을 등록했습니다.' : '작품을 수정했습니다.' });
     } catch (error) {
@@ -233,6 +240,8 @@ function App() {
   }
 
   async function deleteProject() {
+    if (saving) return;
+
     if (!form.id) {
       setAdminMessage({ type: 'error', text: '먼저 삭제할 작품을 선택하세요.' });
       return;
@@ -247,6 +256,7 @@ function App() {
       await callAdmin('delete', formToProject(form));
       const nextProjects = await loadProjects();
       const nextProject = nextProjects[0];
+      setActiveCategory('전체');
       if (nextProject) {
         selectProject(nextProject);
       } else {
@@ -291,6 +301,7 @@ function App() {
                 className={category === activeCategory ? 'tab active' : 'tab'}
                 key={category}
                 type="button"
+                aria-pressed={category === activeCategory}
                 onClick={() => selectCategory(category)}
               >
                 {category}
@@ -304,6 +315,7 @@ function App() {
                 className={project.slug === selectedProject?.slug ? 'project-card active' : 'project-card'}
                 key={project.id}
                 type="button"
+                aria-current={project.slug === selectedProject?.slug ? 'true' : undefined}
                 onClick={() => selectProject(project)}
               >
                 <span className="project-kicker">
@@ -363,7 +375,7 @@ function App() {
               title={`${selectedProject.title} 웹사이트 미리보기`}
               src={selectedProject.iframe_url}
               loading="lazy"
-              sandbox="allow-forms allow-popups allow-popups-to-escape-sandbox allow-same-origin allow-scripts"
+              sandbox="allow-forms allow-popups allow-scripts"
             />
           </div>
 
@@ -412,7 +424,7 @@ function App() {
 
         <form className="admin-form" onSubmit={saveProject}>
           <div className="admin-tools span-2">
-            <button type="button" onClick={startNewProject}>
+            <button type="button" disabled={saving} onClick={startNewProject}>
               새 작품 작성
             </button>
             <button type="button" disabled={!form.id || saving} onClick={deleteProject}>
@@ -489,7 +501,13 @@ function App() {
           </div>
 
           <div className="admin-submit span-2">
-            <p className={`admin-message ${adminMessage.type}`}>{adminMessage.text}</p>
+            <p
+              className={`admin-message ${adminMessage.type}`}
+              role={adminMessage.type === 'error' ? 'alert' : 'status'}
+              aria-live="polite"
+            >
+              {adminMessage.text}
+            </p>
             <button type="submit" disabled={saving}>
               {saving ? '처리 중...' : form.id ? '작품 수정' : '작품 등록'}
             </button>
